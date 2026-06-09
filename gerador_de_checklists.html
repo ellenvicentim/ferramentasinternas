@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Checklist — Ellen Vicentim Advocacia</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --vinho:#4c001f; --vinho-l:#6b0030;
+  --lilac:#c0afc1; --lilac-l:#d8ccd9;
+  --off:#efefef; --white:#fff;
+  --text:#1a1a1a; --muted:#666; --border:#e0d8e0;
+  --obrig:#7a1c1c; --obrig-bg:#f9eded;
+  --recom:#1a4a7a; --recom-bg:#eaf1f9;
+  --escrit:#2a5a1a; --escrit-bg:#edf5e9;
+}
+body { font-family:'DM Sans',sans-serif; background:var(--off); color:var(--text); min-height:100vh; }
+
+/* HEADER */
+header { background:var(--vinho); padding:2rem 2.5rem 1.75rem; position:relative; overflow:hidden; }
+header::before { content:''; position:absolute; top:-50px; right:-50px; width:220px; height:220px; border-radius:50%; background:rgba(192,175,193,.08); }
+.header-tag { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--lilac); font-weight:500; margin-bottom:.4rem; }
+header h1 { font-family:'Playfair Display',serif; font-size:clamp(1.4rem,3.5vw,2rem); font-weight:500; color:#fff; line-height:1.25; position:relative; z-index:1; }
+header p { font-size:12px; color:var(--lilac); margin-top:.3rem; position:relative; z-index:1; }
+
+/* TABS */
+.tabs { display:flex; background:var(--white); border-bottom:1px solid var(--border); }
+.tab { flex:1; padding:.85rem 1rem; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; transition:all .2s; font-family:'DM Sans',sans-serif; }
+.tab.active { color:var(--vinho); border-bottom-color:var(--vinho); }
+.tab:hover:not(.active) { color:var(--text); background:var(--off); }
+
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* CONFIG */
+.config-wrap { padding:2rem 2.5rem; max-width:900px; margin:0 auto; }
+.config-section { margin-bottom:2rem; }
+.config-label { font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.75rem; font-weight:500; }
+.demanda-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:10px; }
+.demanda-card { border:1px solid var(--border); border-radius:10px; padding:.8rem 1rem; cursor:pointer; background:var(--white); transition:all .2s; user-select:none; }
+.demanda-card:hover { border-color:var(--lilac); background:#faf8fa; }
+.demanda-card.selected { border-color:var(--vinho); background:#fdf5f8; }
+.dc-name { font-size:13px; font-weight:500; color:var(--text); }
+.dc-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.dc-custom { font-size:10px; color:var(--vinho); font-weight:500; margin-top:3px; }
+.extras-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; }
+.extra-item { display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:.6rem .85rem; cursor:pointer; background:var(--white); transition:all .15s; user-select:none; font-size:13px; }
+.extra-item:hover { border-color:var(--lilac); background:#faf8fa; }
+.extra-item.selected { border-color:var(--vinho); background:#fdf5f8; }
+.extra-cb { width:18px; height:18px; min-width:18px; border:1.5px solid var(--lilac); border-radius:4px; display:flex; align-items:center; justify-content:center; }
+.extra-item.selected .extra-cb { background:var(--vinho); border-color:var(--vinho); }
+.extra-cb svg { width:10px; height:10px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+.extra-item.selected .extra-cb svg { opacity:1; }
+.btn-gerar { background:var(--vinho); color:#fff; border:none; padding:.85rem 2.5rem; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s; margin-top:1.5rem; }
+.btn-gerar:hover { background:var(--vinho-l); }
+.btn-gerar:disabled { opacity:.4; cursor:not-allowed; }
+.config-note { font-size:12px; color:var(--muted); margin-top:.6rem; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.hidden { display:none; }
+.modal { background:var(--white); border-radius:12px; padding:2rem; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; }
+.modal h3 { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:500; color:var(--vinho); margin-bottom:1.25rem; }
+.modal-label { font-size:12px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.4rem; }
+.modal-input { width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:1rem; }
+.modal-input:focus { border-color:var(--lilac); }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:1rem; }
+.btn-modal { padding:8px 20px; border-radius:8px; font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; border:1px solid var(--border); background:none; color:var(--muted); }
+.btn-modal.primary { background:var(--vinho); color:#fff; border-color:var(--vinho); }
+.btn-modal:hover { border-color:var(--vinho); color:var(--vinho); }
+.btn-modal.primary:hover { background:var(--vinho-l); color:#fff; }
+.doc-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.doc-row input[type=text] { flex:1; border:1px solid var(--border); border-radius:6px; padding:7px 10px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; }
+.doc-row input:focus { border-color:var(--lilac); }
+.doc-row select { border:1px solid var(--border); border-radius:6px; padding:7px 8px; font-size:12px; font-family:'DM Sans',sans-serif; outline:none; background:#fff; }
+.btn-rm-doc { width:28px; height:28px; border:none; background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); border-radius:6px; flex-shrink:0; }
+.btn-rm-doc:hover { background:#f9eded; color:var(--obrig); }
+.btn-add-doc { font-size:12px; color:var(--vinho); background:none; border:1px dashed var(--lilac); border-radius:6px; padding:6px 14px; cursor:pointer; font-family:'DM Sans',sans-serif; width:100%; margin-top:4px; }
+.sec-group { border:1px solid var(--border); border-radius:8px; padding:.75rem 1rem; margin-bottom:.75rem; }
+.sec-group-title { font-size:12px; font-weight:500; color:var(--text); margin-bottom:.5rem; display:flex; align-items:center; gap:8px; }
+.btn-add-sec-group { font-size:12px; color:var(--vinho); background:none; border:1px dashed var(--lilac); border-radius:6px; padding:6px 14px; cursor:pointer; font-family:'DM Sans',sans-serif; width:100%; }
+
+/* CHECKLIST */
+.cl-header-bar { background:var(--white); padding:1.1rem 2.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap; }
+.cl-title-area { flex:1; min-width:180px; }
+.cl-title-area h2 { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:500; color:var(--vinho); }
+.cl-title-area p { font-size:11.5px; color:var(--muted); margin-top:2px; }
+.progress-stat { display:flex; flex-direction:column; min-width:60px; }
+.progress-stat .num { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:500; color:var(--vinho); line-height:1; }
+.progress-stat .lbl { font-size:10px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:.08em; }
+.bar-col { flex:1; min-width:110px; }
+.bar-track { height:5px; background:var(--lilac-l); border-radius:3px; overflow:hidden; }
+.bar-fill { height:100%; background:var(--vinho); border-radius:3px; transition:width .4s; }
+.bar-pct { font-size:11px; color:var(--muted); margin-top:3px; text-align:right; }
+.legend-bar { background:var(--white); padding:.6rem 2.5rem; border-bottom:1px solid var(--border); display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+.legend-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+.tag { display:inline-block; font-size:10.5px; padding:2px 9px; border-radius:20px; font-weight:500; }
+.tag-obrig  { background:var(--obrig-bg);  color:var(--obrig);  }
+.tag-recom  { background:var(--recom-bg);  color:var(--recom);  }
+.tag-escrit { background:var(--escrit-bg); color:var(--escrit); }
+.cl-actions { background:var(--white); padding:.6rem 2.5rem; border-bottom:1px solid var(--border); display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
+.btn-sm { font-size:12px; padding:5px 14px; border:1px solid var(--border); border-radius:6px; background:none; cursor:pointer; color:var(--muted); font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap; }
+.btn-sm:hover { border-color:var(--vinho); color:var(--vinho); }
+.btn-sm.primary { background:var(--vinho); color:#fff; border-color:var(--vinho); }
+.btn-sm.primary:hover { background:var(--vinho-l); }
+main { padding:1.5rem 2.5rem 4rem; max-width:880px; margin:0 auto; }
+.section { margin-bottom:1.25rem; }
+.section-head { display:flex; align-items:center; gap:10px; padding:.65rem 1rem; background:var(--vinho); border-radius:8px 8px 0 0; cursor:pointer; user-select:none; transition:background .15s; }
+.section-head:hover { background:var(--vinho-l); }
+.sec-icon { width:26px; height:26px; background:rgba(192,175,193,.18); border-radius:5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sec-icon svg { width:14px; height:14px; stroke:var(--lilac); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.sec-title { font-size:13px; font-weight:500; color:#fff; flex:1; }
+.sec-meta { font-size:11px; color:var(--lilac); margin-right:6px; }
+.sec-chev { width:15px; height:15px; stroke:var(--lilac); fill:none; stroke-width:2; stroke-linecap:round; transition:transform .25s; flex-shrink:0; }
+.sec-chev.open { transform:rotate(180deg); }
+.sec-items { border:1px solid #e4dde4; border-top:none; border-radius:0 0 8px 8px; overflow:hidden; }
+.item { display:flex; align-items:flex-start; gap:10px; padding:.65rem .9rem; background:var(--white); border-bottom:1px solid #f0eaf0; transition:background .1s; }
+.item:last-child { border-bottom:none; }
+.item:hover { background:#faf8fa; }
+.item.checked { background:#f8f8f8; }
+.cb { width:19px; height:19px; min-width:19px; border:1.5px solid var(--lilac); border-radius:4px; display:flex; align-items:center; justify-content:center; margin-top:1px; cursor:pointer; background:#fff; flex-shrink:0; transition:all .15s; }
+.item.checked .cb { background:var(--vinho); border-color:var(--vinho); }
+.cb svg { width:10px; height:10px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s; }
+.item.checked .cb svg { opacity:1; }
+.item-body { flex:1; min-width:0; }
+.item-text { font-size:13px; line-height:1.45; color:var(--text); }
+.print-cb { display:none; }
+.item.checked .item-text { text-decoration:line-through; color:#aaa; }
+.item-footer { display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap; }
+.item-controls { display:flex; gap:4px; margin-left:auto; }
+.icon-btn { width:24px; height:24px; border:none; background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:4px; opacity:.4; transition:all .15s; padding:0; }
+.icon-btn:hover { opacity:1; background:#f0eaf0; }
+.icon-btn svg { width:13px; height:13px; stroke:var(--text); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.icon-btn.del:hover svg { stroke:#c0392b; }
+.tag-select { font-size:10.5px; border:none; border-radius:20px; padding:2px 8px; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; outline:none; }
+.tag-select.obrig  { background:var(--obrig-bg);  color:var(--obrig);  }
+.tag-select.recom  { background:var(--recom-bg);  color:var(--recom);  }
+.tag-select.escrit { background:var(--escrit-bg); color:var(--escrit); }
+.item-edit { width:100%; border:1px solid var(--lilac); border-radius:6px; padding:4px 8px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:4px; }
+.add-item-row { padding:.5rem .9rem; background:#faf8fa; display:flex; gap:8px; align-items:center; }
+.add-input { flex:1; border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; background:#fff; }
+.add-input:focus { border-color:var(--lilac); }
+.add-tag-sel { font-size:12px; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:'DM Sans',sans-serif; outline:none; background:#fff; cursor:pointer; }
+.btn-add-confirm { background:var(--vinho); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; }
+.btn-add-confirm:hover { background:var(--vinho-l); }
+.empty { text-align:center; padding:3rem 1rem; color:var(--muted); font-size:14px; }
+.empty strong { display:block; font-size:1rem; color:var(--text); margin-bottom:.4rem; }
+footer { text-align:center; padding:1.5rem; font-size:11px; color:#bbb; letter-spacing:.05em; }
+
+/* PDF MODAL */
+.pdf-modal { background:var(--white); border-radius:12px; padding:2rem; width:100%; max-width:460px; }
+.pdf-modal h3 { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:500; color:var(--vinho); margin-bottom:.4rem; }
+.pdf-modal p { font-size:12.5px; color:var(--muted); margin-bottom:1.25rem; line-height:1.5; }
+
+/* ── CAPA (só impressão) ── */
+.print-capa {
+  display: none;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  page-break-after: always;
+  overflow: hidden;
+}
+.print-capa img.capa-foto {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+}
+.print-capa .capa-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(to top, rgba(76,0,31,0.85) 0%, transparent 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 2;
+}
+.capa-overlay-l { display:flex; flex-direction:column; gap:4px; }
+.capa-overlay-nome { font-family:'Playfair Display',serif; font-style:italic; font-size:18px; color:#fff; font-weight:400; }
+.capa-overlay-label { font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.55); }
+.capa-overlay-date { font-size:11px; color:rgba(255,255,255,.45); font-style:italic; margin-top:2px; }
+.capa-overlay-r { text-align:right; }
+.capa-overlay-oab { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.6); }
+
+/* toolbar de capa (apenas tela) */
+.capa-toolbar {
+  background:#fdf8f9;
+  border-bottom:1px solid #f0d0d8;
+  padding:9px 2.5rem;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.capa-upload-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 16px; border-radius:6px;
+  background:var(--vinho); color:#fff; border:none;
+  font-size:12px; font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+}
+.capa-upload-btn:hover { background:var(--vinho-l); }
+.capa-remove-btn {
+  display:none; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:6px;
+  border:1px solid var(--border); background:none;
+  font-size:12px; font-family:'DM Sans',sans-serif;
+  color:var(--muted); cursor:pointer;
+}
+.capa-remove-btn:hover { border-color:var(--vinho); color:var(--vinho); }
+
+/* print header (cabeçalho texto — usado quando NÃO há foto) */
+.print-header { display:none; padding:1.5rem 0 1rem; border-bottom:2px solid var(--vinho); margin-bottom:1.5rem; }
+.print-header .ph-logo { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:500; color:var(--vinho); }
+.print-header .ph-sub { font-size:10pt; color:var(--muted); margin-top:2px; }
+.print-header .ph-dest { margin-top:.75rem; font-size:10.5pt; }
+.print-header .ph-dest strong { color:var(--vinho); }
+.print-header .ph-date { font-size:9.5pt; color:var(--muted); margin-top:2px; }
+
+/* ── PRINT ── */
+@media print {
+  header, .tabs, .cl-header-bar, .legend-bar, .cl-actions, .icon-btn,
+  .add-item-row, .btn-sm, footer, .modal-overlay, .capa-toolbar { display:none !important; }
+  .panel { display:block !important; }
+  #panel-config { display:none !important; }
+  body { background:#fff; font-size:11pt; }
+  main { padding:0; max-width:100%; }
+
+  /* capa foto */
+  .print-capa { display:block !important; }
+  .print-capa.sem-foto { display:none !important; }
+
+  /* cabeçalho texto (quando sem foto) */
+  .print-header { display:block !important; }
+  .print-header.com-foto { display:none !important; }
+
+  .section { break-inside:avoid; margin-bottom:1rem; }
+  .section-head { background:var(--vinho) !important; print-color-adjust:exact; -webkit-print-color-adjust:exact; border-radius:6px 6px 0 0; padding:.5rem .85rem; }
+  .sec-title { font-size:11pt; }
+  .sec-chev, .sec-meta { display:none; }
+  .sec-items { display:block !important; border:1px solid #d0c8d0; border-top:none; border-radius:0 0 6px 6px; }
+  .item { padding:.45rem .75rem; border-bottom:1px solid #f0eaf0; break-inside:avoid; }
+  .item.checked { display:none !important; }
+  .item-controls, .cb { display:none !important; }
+  .print-cb { display:inline-flex !important; width:13px; height:13px; border:1.5px solid #4c001f; border-radius:2px; flex-shrink:0; margin-right:8px; vertical-align:middle; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .tag-select { pointer-events:none; }
+  .item-footer { margin-top:2px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Ellen Vicentim Advocacia para Mulheres</div>
+  <h1>Gerador de Checklist</h1>
+  <p>Selecione a demanda, configure os pedidos adicionais e gere o checklist personalizado.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('config')">⚙ Configuração</button>
+  <button class="tab" id="tab-cl" onclick="switchTab('checklist')">☑ Checklist</button>
+</div>
+
+<!-- CONFIG -->
+<div class="panel active" id="panel-config">
+  <div class="config-wrap">
+    <div class="config-section">
+      <div class="config-label">1. Selecione a demanda principal</div>
+      <div class="demanda-grid" id="demanda-grid"></div>
+      <button class="btn-sm primary" style="margin-top:10px" onclick="openModalNovaDemanda('principal')">+ Nova demanda principal</button>
+    </div>
+    <div class="config-section" id="extras-section" style="display:none">
+      <div class="config-label">2. Pedidos adicionais (opcional)</div>
+      <div class="extras-grid" id="extras-grid"></div>
+      <button class="btn-sm primary" style="margin-top:10px" onclick="openModalNovaDemanda('extra')">+ Novo pedido adicional</button>
+    </div>
+    <button class="btn-gerar" id="btn-gerar" onclick="gerarChecklist()" disabled>Gerar checklist</button>
+    <p class="config-note">Você poderá adicionar, editar e excluir itens após a geração.</p>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="panel" id="panel-checklist">
+
+  <!-- toolbar da capa (apenas tela) -->
+  <div class="capa-toolbar">
+    <span style="font-size:12px;color:#666;font-weight:500">🖼 Imagem de capa:</span>
+    <label class="capa-upload-btn">
+      📁 Selecionar imagem
+      <input type="file" accept="image/*" style="display:none" onchange="carregarCapa(this)"/>
+    </label>
+    <span id="capa-nome-arquivo" style="font-size:12px;color:#aaa"></span>
+    <button class="capa-remove-btn" id="btn-remover-capa" onclick="removerCapa()">✕ Remover</button>
+  </div>
+
+  <div class="cl-header-bar">
+    <div class="cl-title-area">
+      <h2 id="cl-title">Checklist</h2>
+      <p id="cl-sub"></p>
+    </div>
+    <div class="progress-stat"><span class="num" id="done-num">0</span><span class="lbl">reunidos</span></div>
+    <div style="width:1px;height:36px;background:var(--border)"></div>
+    <div class="progress-stat"><span class="num" id="total-num">0</span><span class="lbl">total</span></div>
+    <div class="bar-col">
+      <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
+      <div class="bar-pct" id="bar-pct">0%</div>
+    </div>
+  </div>
+  <div class="legend-bar">
+    <span class="legend-lbl">Legenda:</span>
+    <span class="tag tag-obrig">Obrigatório</span>
+    <span class="tag tag-recom">Recomendado</span>
+    <span class="tag tag-escrit">Responsabilidade do escritório</span>
+  </div>
+  <div class="cl-actions">
+    <button class="btn-sm" onclick="resetChecks()">Limpar marcações</button>
+    <button class="btn-sm primary" onclick="addSectionPrompt()">+ Nova seção</button>
+    <button class="btn-sm primary" onclick="openPdfModal()">⬇ Exportar PDF</button>
+    <button class="btn-sm" onclick="switchTab('config')" style="margin-left:auto">← Reconfigurar</button>
+  </div>
+
+  <!-- CAPA PARA IMPRESSÃO (com foto) -->
+  <div class="print-capa sem-foto" id="print-capa">
+    <img class="capa-foto" id="capa-foto-img" src="" alt="capa"/>
+    <div class="capa-overlay">
+      <div class="capa-overlay-l">
+        <div class="capa-overlay-label">Checklist de documentos</div>
+        <div class="capa-overlay-nome" id="capa-dest-nome-ov">—</div>
+        <div class="capa-overlay-date" id="capa-date-ov"></div>
+      </div>
+      <div class="capa-overlay-r">
+        <div class="capa-overlay-oab">Ellen Vicentim · OAB/SP 411.976</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CABEÇALHO TEXTO (sem foto) -->
+  <div class="print-header" id="print-header">
+    <div class="ph-logo">Ellen Vicentim Advocacia para Mulheres</div>
+    <div class="ph-sub" id="ph-demanda"></div>
+    <div class="ph-dest">Checklist de documentos — <strong id="ph-dest-nome"></strong></div>
+    <div class="ph-date" id="ph-date"></div>
+  </div>
+
+  <main id="cl-main"></main>
+  <footer>Ellen Vicentim Advocacia para Mulheres · ellenvicentim.com.br</footer>
+</div>
+
+<!-- MODAL NOVA DEMANDA -->
+<div class="modal-overlay hidden" id="modal-nova-demanda">
+  <div class="modal">
+    <h3 id="modal-nd-title">Nova demanda principal</h3>
+    <div class="modal-label">Nome da demanda</div>
+    <input class="modal-input" id="nd-nome" placeholder="Ex.: Reconhecimento de paternidade">
+    <div class="modal-label">Subtítulo (opcional)</div>
+    <input class="modal-input" id="nd-sub" placeholder="Ex.: Investigatória ou declaratória">
+    <div class="modal-label" style="margin-bottom:.5rem">Seções e documentos</div>
+    <div id="nd-sections-wrap"></div>
+    <button class="btn-add-sec-group" onclick="addSecGroup()">+ Adicionar seção</button>
+    <div class="modal-actions">
+      <button class="btn-modal" onclick="closeModalNovaDemanda()">Cancelar</button>
+      <button class="btn-modal primary" onclick="salvarNovaDemanda()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PDF -->
+<div class="modal-overlay hidden" id="modal-pdf">
+  <div class="modal pdf-modal">
+    <h3>Exportar checklist em PDF</h3>
+    <p>O PDF será gerado com os itens ainda <strong>não marcados</strong> como reunidos. Informe o nome da destinatária para personalizar o cabeçalho.</p>
+    <div class="modal-label">Nome da cliente</div>
+    <input class="modal-input" id="pdf-nome" placeholder="Ex.: Maria da Silva">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <input type="checkbox" id="pdf-todos" style="width:16px;height:16px;accent-color:var(--vinho)">
+      <label for="pdf-todos" style="font-size:13px;cursor:pointer">Incluir todos os itens (inclusive os já reunidos)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal" onclick="closePdfModal()">Cancelar</button>
+      <button class="btn-modal primary" onclick="gerarPdf()">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ DATA ══ */
+const BASE_DEMANDAS = [
+  { id:'divorcio', name:'Divórcio', sub:'Casamento registrado', custom:false,
+    sections:[
+      { title:'Documentos pessoais', items:[
+        {text:'RG e CPF',tag:'obrig'},
+        {text:'Certidão de casamento atualizada (máx. 90 dias)',tag:'obrig'},
+        {text:'Comprovante de residência atual',tag:'obrig'},
+        {text:'Pacto antenupcial (se houver)',tag:'recom'},
+      ]},
+      { title:'Documentos do outro cônjuge', items:[
+        {text:'RG e CPF do cônjuge (se disponível)',tag:'recom'},
+        {text:'Comprovante de residência do cônjuge',tag:'recom'},
+      ]},
+      { title:'Partilha de bens', items:[
+        {text:'Matrícula atualizada dos imóveis (CRI)',tag:'obrig'},
+        {text:'CLRV dos veículos',tag:'obrig'},
+        {text:'Extratos bancários dos últimos 90 dias de todas as contas',tag:'obrig'},
+        {text:'Declaração de IR dos últimos 2 anos',tag:'recom'},
+        {text:'Contrato social e alterações (empresas)',tag:'recom'},
+        {text:'Pesquisa de bens imóveis e veículos do cônjuge',tag:'escrit'},
+        {text:'Pesquisa de procurações no Tabelionato de Notas',tag:'escrit'},
+      ]},
+    ]
+  },
+  { id:'uniao_estavel', name:'União estável', sub:'Constituição ou dissolução', custom:false,
+    sections:[
+      { title:'Documentos pessoais', items:[
+        {text:'RG e CPF',tag:'obrig'},
+        {text:'Comprovante de residência atual',tag:'obrig'},
+        {text:'Certidão de nascimento ou casamento atualizada',tag:'obrig'},
+        {text:'Escritura pública de união estável (se registrada)',tag:'recom'},
+      ]},
+      { title:'Prova da união (início, meio e fim)', items:[
+        {text:'Comprovantes de residência no mesmo endereço em nome de ambos',tag:'obrig'},
+        {text:'Contrato de plano de saúde com um como dependente do outro',tag:'recom'},
+        {text:'Fotografias em situações sociais (aniversários, celebrações)',tag:'recom'},
+        {text:'Prints de redes sociais com referências ao relacionamento',tag:'recom'},
+        {text:'Declarações de testemunhas — mínimo 2 (nome completo, estado civil, profissão, RG, CPF, endereço)',tag:'obrig'},
+      ]},
+      { title:'Partilha de bens', items:[
+        {text:'Matrícula atualizada dos imóveis adquiridos durante a união (CRI)',tag:'obrig'},
+        {text:'CLRV dos veículos adquiridos durante a união',tag:'obrig'},
+        {text:'Extratos bancários dos últimos 90 dias',tag:'obrig'},
+        {text:'Declaração de IR dos últimos 2 anos',tag:'recom'},
+        {text:'Pesquisa de bens imóveis e veículos do companheiro',tag:'escrit'},
+      ]},
+    ]
+  },
+  { id:'guarda', name:'Guarda e convivência', sub:'Filhos', custom:false,
+    sections:[
+      { title:'Documentos pessoais e da criança', items:[
+        {text:'RG e CPF da requerente',tag:'obrig'},
+        {text:'Certidão de nascimento da(s) criança(s)',tag:'obrig'},
+        {text:'Comprovante de residência atual',tag:'obrig'},
+      ]},
+      { title:'Prova da guarda de fato', items:[
+        {text:'Relatório escolar e declaração da escola sobre quem leva/busca a criança',tag:'obrig'},
+        {text:'Registros de agenda escolar (comunicados assinados pelo responsável)',tag:'recom'},
+        {text:'Histórico de comparecimento em unidades de saúde (com identificação do acompanhante)',tag:'recom'},
+        {text:'Fotos da rotina com a mãe (escola, consultas, aniversários, viagens)',tag:'recom'},
+        {text:'Relatório de acompanhamento psicológico da criança (se houver)',tag:'recom'},
+      ]},
+      { title:'Relação com o outro genitor', items:[
+        {text:'Prints de WhatsApp ou histórico de chamadas (últimos 6 meses)',tag:'recom'},
+        {text:'Vídeos da criança recusando a convivência com o outro genitor (se houver)',tag:'recom'},
+      ]},
+      { title:'Pesquisas do escritório', items:[
+        {text:'Pesquisa de antecedentes criminais do outro genitor',tag:'escrit'},
+        {text:'Verificação de processos em nome do outro genitor',tag:'escrit'},
+      ]},
+    ]
+  },
+  { id:'alimentos', name:'Alimentos', sub:'Pensão alimentícia', custom:false,
+    sections:[
+      { title:'Documentos pessoais e da criança', items:[
+        {text:'RG e CPF da requerente',tag:'obrig'},
+        {text:'Certidão de nascimento da(s) criança(s)',tag:'obrig'},
+        {text:'Comprovante de residência',tag:'obrig'},
+      ]},
+      { title:'Despesas com a criança', items:[
+        {text:'Boletos de mensalidade escolar',tag:'obrig'},
+        {text:'Comprovantes de atividades extracurriculares',tag:'recom'},
+        {text:'Boleto de plano de saúde (se houver)',tag:'recom'},
+        {text:'Notas fiscais de consultas médicas',tag:'recom'},
+        {text:'Notas fiscais de farmácia (últimos 90 dias)',tag:'recom'},
+        {text:'Comprovante de transporte escolar (se houver)',tag:'recom'},
+      ]},
+      { title:'Despesas gerais da residência', items:[
+        {text:'Comprovante de aluguel ou financiamento do imóvel',tag:'obrig'},
+        {text:'Contas de energia, água e internet (últimos 90 dias)',tag:'recom'},
+        {text:'Notas fiscais de mercado (últimos 90 dias)',tag:'recom'},
+        {text:'IPTU / IPVA',tag:'recom'},
+      ]},
+      { title:'Renda da requerente', items:[
+        {text:'Holerites ou comprovantes de renda dos últimos 3 meses',tag:'obrig'},
+        {text:'Declaração de IR (se declarante)',tag:'recom'},
+        {text:'Extratos bancários dos últimos 90 dias',tag:'recom'},
+      ]},
+      { title:'Investigação da renda do alimentante', items:[
+        {text:'Pesquisa de bens imóveis e veículos do alimentante',tag:'escrit'},
+        {text:'Pesquisa de processos judiciais em nome do alimentante',tag:'escrit'},
+        {text:'Fotos de redes sociais que indiquem padrão de vida incompatível com a renda declarada',tag:'recom'},
+      ]},
+    ]
+  },
+  { id:'inventario', name:'Inventário', sub:'Extrajudicial ou judicial', custom:false,
+    sections:[
+      { title:'Documentos do falecido', items:[
+        {text:'Certidão de óbito',tag:'obrig'},
+        {text:'RG e CPF do falecido',tag:'obrig'},
+        {text:'Certidão de casamento atualizada (se casado)',tag:'obrig'},
+        {text:'Certidão de nascimento dos herdeiros',tag:'obrig'},
+        {text:'Testamento (se houver)',tag:'recom'},
+        {text:'Declaração de IR do falecido (últimos 3 anos)',tag:'recom'},
+      ]},
+      { title:'Documentos dos herdeiros', items:[
+        {text:'RG e CPF de todos os herdeiros',tag:'obrig'},
+        {text:'Comprovante de residência de todos os herdeiros',tag:'obrig'},
+        {text:'Certidão de casamento ou nascimento de cada herdeiro',tag:'obrig'},
+      ]},
+      { title:'Bens a inventariar', items:[
+        {text:'Matrícula atualizada dos imóveis (CRI)',tag:'obrig'},
+        {text:'CLRV dos veículos',tag:'obrig'},
+        {text:'Extratos bancários de todas as contas do falecido',tag:'obrig'},
+        {text:'Extrato de investimentos e previdência privada',tag:'recom'},
+        {text:'Contrato social de empresas (se houver)',tag:'recom'},
+      ]},
+      { title:'Certidões (responsabilidade do escritório)', items:[
+        {text:'Certidões negativas de débitos federais, estaduais e municipais',tag:'escrit'},
+        {text:'Pesquisa de processos judiciais em nome do falecido',tag:'escrit'},
+      ]},
+    ]
+  },
+  { id:'usucapiao', name:'Usucapião extraordinária', sub:'Art. 1.238 CC — 15 anos', custom:false,
+    sections:[
+      { title:'Documentos pessoais da requerente', items:[
+        {text:'RG e CPF',tag:'obrig'},
+        {text:'Certidão de nascimento ou casamento (atualizada)',tag:'obrig'},
+        {text:'Comprovante de residência atual',tag:'obrig'},
+        {text:'Pacto antenupcial ou escritura de união estável (se houver)',tag:'recom'},
+      ]},
+      { title:'Documentos do imóvel', items:[
+        {text:'Matrícula atualizada do imóvel no CRI (máx. 30 dias)',tag:'obrig'},
+        {text:'Certidão negativa de ônus reais',tag:'obrig'},
+        {text:'Certidão de IPTU dos últimos 5 anos ou declaração da Prefeitura',tag:'obrig'},
+        {text:'Planta ou croqui do imóvel com dimensões e confrontantes',tag:'obrig'},
+        {text:'Memorial descritivo georreferenciado (área rural ou quando exigido)',tag:'recom'},
+      ]},
+      { title:'Prova da posse — tempo (mínimo 15 anos)', items:[
+        {text:'Contas de água, luz, gás ou telefone em nome da requerente — série histórica de ao menos 15 anos',tag:'obrig'},
+        {text:'Comprovantes de pagamento de IPTU em nome da requerente',tag:'obrig'},
+        {text:'Contratos, recibos ou notas de serviços realizados no imóvel (reforma, manutenção)',tag:'recom'},
+        {text:'Extratos bancários ou declarações de IR indicando o imóvel como residência',tag:'recom'},
+      ]},
+      { title:'Prova da posse — qualidade (animus domini)', items:[
+        {text:'Declarações de vizinhos — mínimo 2 (nome completo, contato, tempo de conhecimento)',tag:'obrig'},
+        {text:'Rol de testemunhas para audiência (mínimo 2, máximo 10)',tag:'obrig'},
+        {text:'Fotos datadas do imóvel ao longo dos anos',tag:'recom'},
+      ]},
+      { title:'Identificação do proprietário tabular', items:[
+        {text:'Certidão de busca no CRI da circunscrição',tag:'obrig'},
+        {text:'Certidão de óbito do proprietário (se falecido) e dados dos herdeiros',tag:'recom'},
+        {text:'Pesquisa de CPF/CNPJ do último proprietário registrado',tag:'escrit'},
+      ]},
+      { title:'Certidões negativas e documentos processuais', items:[
+        {text:'Certidão negativa de ações possessórias envolvendo o imóvel',tag:'obrig'},
+        {text:'Certidão negativa de ações cíveis em nome da requerente',tag:'obrig'},
+        {text:'Procuração com poderes específicos para a ação',tag:'obrig'},
+        {text:'Declaração de hipossuficiência (se pleiteada gratuidade)',tag:'recom'},
+        {text:'Laudo de avaliação do imóvel (para fins de custas)',tag:'recom'},
+      ]},
+    ]
+  },
+  { id:'pacto', name:'Pacto antenupcial', sub:'Elaboração', custom:false,
+    sections:[
+      { title:'Documentos dos nubentes', items:[
+        {text:'RG e CPF de ambos',tag:'obrig'},
+        {text:'Certidão de nascimento ou casamento anterior (atualizada)',tag:'obrig'},
+        {text:'Comprovante de residência de ambos',tag:'obrig'},
+        {text:'Profissão e estado civil',tag:'obrig'},
+      ]},
+      { title:'Patrimônio pré-existente', items:[
+        {text:'Relação de bens imóveis de cada nubente (com matrícula atualizada)',tag:'obrig'},
+        {text:'CLRV dos veículos de cada nubente',tag:'recom'},
+        {text:'Extrato de investimentos e aplicações financeiras',tag:'recom'},
+        {text:'Declaração de IR do último ano',tag:'recom'},
+      ]},
+    ]
+  },
+];
+
+const BASE_EXTRAS = [
+  { id:'gratuidade', name:'Gratuidade da justiça', custom:false,
+    sections:[{ title:'Gratuidade da justiça', items:[
+      {text:'Declaração de hipossuficiência assinada',tag:'obrig'},
+      {text:'Extratos bancários dos últimos 90 dias (todas as contas)',tag:'obrig'},
+      {text:'Holerites ou comprovantes de renda dos últimos 90 dias',tag:'obrig'},
+      {text:'Carteira de Trabalho (página de dados e último registro)',tag:'recom'},
+      {text:'Declaração de IR (se declarante)',tag:'recom'},
+      {text:'Comprovantes de despesas fixas altas (financiamento, dívidas)',tag:'recom'},
+    ]}]
+  },
+  { id:'violencia', name:'Violência doméstica', custom:false,
+    sections:[{ title:'Violência doméstica (Lei Maria da Penha)', items:[
+      {text:'Boletins de ocorrência anteriores',tag:'obrig'},
+      {text:'Laudo de exame de corpo de delito (se houver)',tag:'recom'},
+      {text:'Medidas protetivas já deferidas (se houver)',tag:'recom'},
+      {text:'Relatórios médicos ou psicológicos atestando violência sofrida',tag:'recom'},
+      {text:'Fotografias e vídeos das lesões',tag:'recom'},
+      {text:'Prints de mensagens ameaçadoras (verificar via ata notarial ou Verifact)',tag:'recom'},
+      {text:'Gravações de ligações ou áudios ameaçadores',tag:'recom'},
+    ]}]
+  },
+  { id:'danos_morais', name:'Indenização por danos morais', custom:false,
+    sections:[{ title:'Indenização por danos morais (violência doméstica)', items:[
+      {text:'Mesmas provas da violência doméstica (físicas, psicológicas, patrimoniais, morais ou sexuais)',tag:'obrig'},
+      {text:'Laudos e relatórios de tratamento psicológico em razão da violência',tag:'recom'},
+      {text:'Documentação de afastamento do trabalho por motivo de violência (se houver)',tag:'recom'},
+    ]}]
+  },
+  { id:'animais', name:'Guarda de animais', custom:false,
+    sections:[{ title:'Guarda de animais de estimação', items:[
+      {text:'Nota fiscal, contrato de compra ou adoção do animal',tag:'obrig'},
+      {text:'Carteira de vacinação e histórico veterinário com nome do responsável',tag:'obrig'},
+      {text:'Comprovantes de despesas com o animal (veterinário, ração, plano de saúde animal)',tag:'recom'},
+      {text:'Fotos e vídeos que demonstrem o vínculo afetivo e os cuidados prestados',tag:'recom'},
+    ]}]
+  },
+];
+
+let DEMANDAS = JSON.parse(JSON.stringify(BASE_DEMANDAS));
+let EXTRAS   = JSON.parse(JSON.stringify(BASE_EXTRAS));
+let selectedDemanda = null;
+let selectedExtras  = new Set();
+let sections = [];
+let itemCounter = 0;
+let modalMode = 'principal';
+let secGroupCounter = 0;
+let temFoto = false;
+
+/* ══ CAPA ══ */
+function carregarCapa(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('capa-foto-img');
+    var capa = document.getElementById('print-capa');
+    img.src = e.target.result;
+    capa.classList.remove('sem-foto');
+    temFoto = true;
+    document.getElementById('capa-nome-arquivo').textContent = input.files[0].name;
+    var btn = document.getElementById('btn-remover-capa');
+    btn.style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function removerCapa() {
+  var img = document.getElementById('capa-foto-img');
+  img.src = '';
+  document.getElementById('print-capa').classList.add('sem-foto');
+  temFoto = false;
+  document.getElementById('capa-nome-arquivo').textContent = '';
+  document.getElementById('btn-remover-capa').style.display = 'none';
+}
+
+/* ══ TAB ══ */
+function switchTab(tab) {
+  document.querySelectorAll('.tab,.panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.tab')[tab === 'config' ? 0 : 1].classList.add('active');
+}
+
+/* ══ CONFIG ══ */
+function renderConfig() {
+  document.getElementById('demanda-grid').innerHTML = DEMANDAS.map(d =>
+    `<div class="demanda-card ${selectedDemanda===d.id?'selected':''}" onclick="selectDemanda('${d.id}')">
+      <div class="dc-name">${esc(d.name)}</div>
+      <div class="dc-sub">${esc(d.sub||'')}</div>
+      ${d.custom?'<div class="dc-custom">★ Personalizada</div>':''}
+    </div>`
+  ).join('');
+  document.getElementById('extras-grid').innerHTML = EXTRAS.map(e =>
+    `<div class="extra-item ${selectedExtras.has(e.id)?'selected':''}" onclick="toggleExtra('${e.id}')">
+      <div class="extra-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <span>${esc(e.name)}</span>${e.custom?'<span style="font-size:10px;color:var(--vinho);margin-left:auto">★</span>':''}
+    </div>`
+  ).join('');
+  document.getElementById('extras-section').style.display = selectedDemanda ? 'block' : 'none';
+  document.getElementById('btn-gerar').disabled = !selectedDemanda;
+}
+
+function selectDemanda(id) { selectedDemanda = id; renderConfig(); }
+function toggleExtra(id) {
+  selectedExtras.has(id) ? selectedExtras.delete(id) : selectedExtras.add(id);
+  renderConfig();
+}
+
+/* ══ MODAL NOVA DEMANDA ══ */
+function openModalNovaDemanda(mode) {
+  modalMode = mode;
+  document.getElementById('modal-nd-title').textContent = mode === 'principal' ? 'Nova demanda principal' : 'Novo pedido adicional';
+  document.getElementById('nd-nome').value = '';
+  document.getElementById('nd-sub').value = '';
+  secGroupCounter = 0;
+  document.getElementById('nd-sections-wrap').innerHTML = '';
+  addSecGroup();
+  document.getElementById('modal-nova-demanda').classList.remove('hidden');
+}
+function closeModalNovaDemanda() { document.getElementById('modal-nova-demanda').classList.add('hidden'); }
+
+function addSecGroup() {
+  const wrap = document.getElementById('nd-sections-wrap');
+  const idx = secGroupCounter++;
+  const div = document.createElement('div');
+  div.className = 'sec-group'; div.id = 'secgroup_' + idx;
+  div.innerHTML = `
+    <div class="sec-group-title">
+      <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none"
+             placeholder="Nome da seção" id="secname_${idx}">
+      <button class="btn-rm-doc" onclick="document.getElementById('secgroup_${idx}').remove()" title="Remover seção">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>
+      </button>
+    </div>
+    <div id="docslist_${idx}"></div>
+    <button class="btn-add-doc" onclick="addDocRow(${idx})">+ Adicionar documento</button>`;
+  wrap.appendChild(div);
+  addDocRow(idx);
+}
+
+function addDocRow(secIdx) {
+  const list = document.getElementById('docslist_' + secIdx);
+  const row = document.createElement('div');
+  row.className = 'doc-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Descrição do documento">
+    <select>
+      <option value="obrig">Obrigatório</option>
+      <option value="recom" selected>Recomendado</option>
+      <option value="escrit">Escritório</option>
+    </select>
+    <button class="btn-rm-doc" onclick="this.parentElement.remove()" title="Remover">
+      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>
+    </button>`;
+  list.appendChild(row);
+}
+
+function salvarNovaDemanda() {
+  const nome = document.getElementById('nd-nome').value.trim();
+  const sub  = document.getElementById('nd-sub').value.trim();
+  if (!nome) { document.getElementById('nd-nome').focus(); return; }
+  const newSections = [];
+  document.querySelectorAll('[id^="secgroup_"]').forEach(sg => {
+    const idx = sg.id.replace('secgroup_', '');
+    const title = document.getElementById('secname_' + idx)?.value.trim() || 'Documentos';
+    const items = [];
+    sg.querySelectorAll('.doc-row').forEach(row => {
+      const txt = row.querySelector('input[type=text]').value.trim();
+      const tag = row.querySelector('select').value;
+      if (txt) items.push({ text: txt, tag });
+    });
+    if (items.length) newSections.push({ title, items });
+  });
+  if (!newSections.length) { alert('Adicione ao menos um documento em uma seção.'); return; }
+  const id = 'custom_' + Date.now();
+  const obj = { id, name: nome, sub: sub || '', custom: true, sections: newSections };
+  if (modalMode === 'principal') { DEMANDAS.push(obj); selectedDemanda = id; }
+  else { EXTRAS.push(obj); selectedExtras.add(id); }
+  closeModalNovaDemanda();
+  renderConfig();
+}
+
+/* ══ GERAR CHECKLIST ══ */
+function gerarChecklist() {
+  if (!selectedDemanda) return;
+  const demanda = DEMANDAS.find(d => d.id === selectedDemanda);
+  sections = []; itemCounter = 0;
+  const allSecs = [...demanda.sections];
+  selectedExtras.forEach(eid => {
+    const extra = EXTRAS.find(e => e.id === eid);
+    if (extra) extra.sections.forEach(s => allSecs.push(s));
+  });
+  allSecs.forEach(sec => {
+    sections.push({
+      title: sec.title, open: true,
+      items: sec.items.map(it => ({ text: it.text, tag: it.tag, checked: false, id: 'item_' + (++itemCounter) }))
+    });
+  });
+  const extraLabels = [...selectedExtras].map(eid => EXTRAS.find(e => e.id === eid)?.name).filter(Boolean);
+  document.getElementById('cl-title').textContent = demanda.name;
+  document.getElementById('cl-sub').textContent   = extraLabels.length ? '+ ' + extraLabels.join(' · ') : (demanda.sub || '');
+  document.getElementById('ph-demanda').textContent = demanda.name + (extraLabels.length ? ' · ' + extraLabels.join(' · ') : '');
+  renderChecklist();
+  switchTab('checklist');
+}
+
+/* ══ CHECKLIST RENDER ══ */
+function renderChecklist() {
+  const main = document.getElementById('cl-main');
+  main.innerHTML = '';
+  if (!sections.length) { main.innerHTML = '<div class="empty"><strong>Nenhum item ainda.</strong>Use o botão "+ Nova seção".</div>'; updateProgress(); return; }
+  sections.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section'; div.id = 'sec_' + si;
+    div.innerHTML = `
+      <div class="section-head" onclick="toggleSection(${si})">
+        <div class="sec-icon"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/></svg></div>
+        <span class="sec-title" id="sectitle_${si}">${esc(sec.title)}</span>
+        <button class="icon-btn" title="Editar título" style="opacity:.5;flex-shrink:0" onclick="event.stopPropagation();editSecTitle(${si})">
+          <svg viewBox="0 0 16 16"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+        </button>
+        <span class="sec-meta">${sec.items.length} itens</span>
+        <svg class="sec-chev ${sec.open?'open':''}" id="chev_${si}" viewBox="0 0 16 16"><polyline points="4 6 8 10 12 6"/></svg>
+      </div>
+      <div class="sec-items" id="sitems_${si}" style="display:${sec.open?'block':'none'}">
+        ${sec.items.map(item => renderItemHtml(si, item)).join('')}
+        <div class="add-item-row" id="addrow_${si}">
+          <input class="add-input" id="addinput_${si}" placeholder="Novo item..." onkeydown="if(event.key==='Enter')confirmAdd(${si})">
+          <select class="add-tag-sel" id="addtag_${si}">
+            <option value="obrig">Obrigatório</option>
+            <option value="recom">Recomendado</option>
+            <option value="escrit">Escritório</option>
+          </select>
+          <button class="btn-add-confirm" onclick="confirmAdd(${si})">Adicionar</button>
+        </div>
+      </div>`;
+    main.appendChild(div);
+  });
+  updateProgress();
+}
+
+function renderItemHtml(si, item) {
+  return `<div class="item ${item.checked?'checked':''}" id="${item.id}">
+    <div class="cb" onclick="toggleItem('${item.id}')"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    <div class="print-cb"></div>
+    <div class="item-body">
+      <div class="item-text" id="text_${item.id}">${esc(item.text)}</div>
+      <div class="item-footer">
+        <select class="tag-select ${item.tag}" id="tag_${item.id}" onchange="changeTag('${item.id}',this.value)">
+          <option value="obrig" ${item.tag==='obrig'?'selected':''}>Obrigatório</option>
+          <option value="recom" ${item.tag==='recom'?'selected':''}>Recomendado</option>
+          <option value="escrit" ${item.tag==='escrit'?'selected':''}>Escritório</option>
+        </select>
+        <div class="item-controls">
+          <button class="icon-btn" title="Editar" onclick="editItem('${item.id}')">
+            <svg viewBox="0 0 16 16"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+          </button>
+          <button class="icon-btn del" title="Excluir" onclick="deleteItem('${item.id}',${si})">
+            <svg viewBox="0 0 16 16"><polyline points="3 4 13 4"/><path d="M5 4V2h6v2"/><rect x="4" y="4" width="8" height="10" rx="1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══ ITEM ACTIONS ══ */
+function toggleItem(itemId) {
+  const item = findItem(itemId); if (!item) return;
+  item.checked = !item.checked;
+  document.getElementById(itemId)?.classList.toggle('checked', item.checked);
+  updateProgress();
+}
+function changeTag(itemId, newTag) {
+  const item = findItem(itemId); if (!item) return;
+  item.tag = newTag;
+  const sel = document.getElementById('tag_' + itemId);
+  if (sel) sel.className = 'tag-select ' + newTag;
+}
+function editItem(itemId) {
+  const item = findItem(itemId); if (!item) return;
+  const textEl = document.getElementById('text_' + itemId); if (!textEl) return;
+  textEl.innerHTML = `<input class="item-edit" id="edit_${itemId}" value="${escAttr(item.text)}"
+    onkeydown="if(event.key==='Enter')saveEdit('${itemId}');if(event.key==='Escape')cancelEdit('${itemId}')">
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn-add-confirm" onclick="saveEdit('${itemId}')">Salvar</button>
+      <button class="btn-sm" onclick="cancelEdit('${itemId}')">Cancelar</button>
+    </div>`;
+  const inp = document.getElementById('edit_' + itemId);
+  if (inp) { inp.focus(); inp.select(); }
+}
+function saveEdit(itemId) {
+  const inp = document.getElementById('edit_' + itemId); if (!inp) return;
+  const newText = inp.value.trim(); if (!newText) return;
+  const item = findItem(itemId); if (!item) return;
+  item.text = newText;
+  const textEl = document.getElementById('text_' + itemId);
+  if (textEl) textEl.innerHTML = esc(newText);
+}
+function cancelEdit(itemId) {
+  const item = findItem(itemId);
+  const textEl = document.getElementById('text_' + itemId);
+  if (item && textEl) textEl.innerHTML = esc(item.text);
+}
+function deleteItem(itemId, si) {
+  sections[si].items = sections[si].items.filter(it => it.id !== itemId);
+  document.getElementById(itemId)?.remove();
+  const meta = document.querySelector(`#sec_${si} .sec-meta`);
+  if (meta) meta.textContent = sections[si].items.length + ' itens';
+  updateProgress();
+}
+function confirmAdd(si) {
+  const inp = document.getElementById('addinput_' + si);
+  const sel = document.getElementById('addtag_' + si);
+  const text = inp?.value.trim(); if (!text) return;
+  const tag = sel?.value || 'recom';
+  const newItem = { text, tag, checked:false, id:'item_' + (++itemCounter) };
+  sections[si].items.push(newItem);
+  const row = document.getElementById('addrow_' + si);
+  if (row) { row.insertAdjacentHTML('beforebegin', renderItemHtml(si, newItem)); }
+  inp.value = '';
+  const meta = document.querySelector(`#sec_${si} .sec-meta`);
+  if (meta) meta.textContent = sections[si].items.length + ' itens';
+  updateProgress();
+}
+function toggleSection(si) {
+  sections[si].open = !sections[si].open;
+  const items = document.getElementById('sitems_' + si);
+  const chev  = document.getElementById('chev_' + si);
+  if (items) items.style.display = sections[si].open ? 'block' : 'none';
+  if (chev)  chev.classList.toggle('open', sections[si].open);
+}
+function editSecTitle(si) {
+  const span = document.getElementById('sectitle_' + si); if (!span) return;
+  const current = sections[si].title;
+  span.innerHTML = `<input id="sectitleinput_${si}"
+    style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);border-radius:4px;padding:2px 8px;font-size:13px;font-weight:500;color:#fff;font-family:'DM Sans',sans-serif;outline:none;width:100%;min-width:140px"
+    value="${escAttr(current)}"
+    onclick="event.stopPropagation()"
+    onkeydown="if(event.key==='Enter'){event.stopPropagation();saveSecTitle(${si});}if(event.key==='Escape'){event.stopPropagation();cancelSecTitle(${si});}">`;
+  const inp = document.getElementById('sectitleinput_' + si);
+  if (inp) { inp.focus(); inp.select(); inp.addEventListener('blur', () => saveSecTitle(si)); }
+}
+function saveSecTitle(si) {
+  const inp = document.getElementById('sectitleinput_' + si); if (!inp) return;
+  const newTitle = inp.value.trim() || sections[si].title;
+  sections[si].title = newTitle;
+  const span = document.getElementById('sectitle_' + si);
+  if (span) span.innerHTML = esc(newTitle);
+}
+function cancelSecTitle(si) {
+  const span = document.getElementById('sectitle_' + si);
+  if (span) span.innerHTML = esc(sections[si].title);
+}
+function addSectionPrompt() {
+  const name = prompt('Nome da nova seção:');
+  if (!name?.trim()) return;
+  sections.push({ title:name.trim(), open:true, items:[] });
+  renderChecklist();
+}
+
+/* ══ PROGRESS ══ */
+function updateProgress() {
+  let total=0, done=0;
+  sections.forEach(s => s.items.forEach(it => { total++; if (it.checked) done++; }));
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('done-num').textContent = done;
+  document.getElementById('total-num').textContent = total;
+  document.getElementById('bar-fill').style.width = pct + '%';
+  document.getElementById('bar-pct').textContent = pct + '%';
+}
+function resetChecks() {
+  sections.forEach(s => s.items.forEach(it => { it.checked = false; }));
+  document.querySelectorAll('.item.checked').forEach(el => el.classList.remove('checked'));
+  updateProgress();
+}
+
+/* ══ PDF MODAL ══ */
+function openPdfModal() {
+  document.getElementById('pdf-nome').value = '';
+  document.getElementById('pdf-todos').checked = false;
+  document.getElementById('modal-pdf').classList.remove('hidden');
+  setTimeout(() => document.getElementById('pdf-nome').focus(), 100);
+}
+function closePdfModal() { document.getElementById('modal-pdf').classList.add('hidden'); }
+
+function gerarPdf() {
+  const nome = document.getElementById('pdf-nome').value.trim() || 'Cliente';
+  const incluirTodos = document.getElementById('pdf-todos').checked;
+
+  // oculta itens marcados (se não incluir todos)
+  document.querySelectorAll('.item.checked').forEach(el => {
+    el.dataset.wasChecked = '1';
+    if (!incluirTodos) el.style.display = 'none';
+  });
+
+  // dados da capa overlay
+  document.getElementById('capa-dest-nome-ov').textContent = nome;
+  document.getElementById('ph-dest-nome').textContent = nome;
+  const now = new Date();
+  const dataStr = now.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('capa-date-ov').textContent = dataStr;
+  document.getElementById('ph-date').textContent = 'Emitido em ' + dataStr;
+
+  // capa com foto OU cabeçalho texto
+  const printCapa = document.getElementById('print-capa');
+  const printHeader = document.getElementById('print-header');
+  if (temFoto) {
+    printCapa.classList.remove('sem-foto');
+    printHeader.classList.add('com-foto');
+  } else {
+    printCapa.classList.add('sem-foto');
+    printHeader.classList.remove('com-foto');
+  }
+
+  // expande todas as seções para impressão
+  const prevOpenStates = sections.map(s => s.open);
+  sections.forEach((s, si) => {
+    s.open = true;
+    const sitems = document.getElementById('sitems_' + si);
+    if (sitems) sitems.style.display = 'block';
+    const chev = document.getElementById('chev_' + si);
+    if (chev) chev.classList.add('open');
+  });
+
+  closePdfModal();
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      document.querySelectorAll('.item[data-was-checked="1"]').forEach(el => {
+        el.style.display = ''; delete el.dataset.wasChecked;
+      });
+      sections.forEach((s, si) => {
+        s.open = prevOpenStates[si];
+        const sitems = document.getElementById('sitems_' + si);
+        if (sitems) sitems.style.display = s.open ? 'block' : 'none';
+        const chev = document.getElementById('chev_' + si);
+        if (chev) chev.classList.toggle('open', s.open);
+      });
+      printHeader.classList.remove('com-foto');
+    }, 1000);
+  }, 200);
+}
+
+/* ══ HELPERS ══ */
+function findItem(itemId) {
+  for (const s of sections) { const it = s.items.find(i => i.id === itemId); if (it) return it; } return null;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) { return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+renderConfig();
+</script>
+</body>
+</html>

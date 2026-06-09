@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Open+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;font-size:14px;color:#1a1a1a;background:#f0ece8}
+:root{--v:#6B1A2A;--v2:#8B2A3A;--vl:#f5eaed;--vb:#c4788a;--r:8px}
+.app{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
+h1.app-title{font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--v);margin-bottom:1.25rem;font-weight:400}
+.tabs{display:flex;border-bottom:2px solid var(--vb);margin-bottom:1.5rem}
+.tb{padding:9px 22px;font-size:13px;font-family:'Open Sans',sans-serif;font-weight:500;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;color:#888;margin-bottom:-2px;transition:color .15s}
+.tb.active{color:var(--v);border-bottom-color:var(--v)}
+.tb:hover:not(.active){color:#333}
+.panel{display:none}.panel.active{display:block}
+.sec{background:#fff;border:0.5px solid #ddd;border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
+.stitle{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--v);margin-bottom:1rem;font-weight:400}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{font-size:13px;font-family:'Open Sans',sans-serif;border-radius:6px;border:0.5px solid #ccc;padding:7px 10px;background:#fafafa;color:#1a1a1a;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--v);outline-offset:1px;background:#fff}
+.fhint{font-size:11px;color:#bbb;margin-top:2px}
+.srow{display:flex;align-items:center;gap:10px}
+.srow input[type=range]{flex:1;accent-color:var(--v)}
+.sv{font-size:13px;font-weight:500;min-width:44px;text-align:right;color:var(--v)}
+.rbox{background:var(--v);border-radius:var(--r);padding:1.5rem;color:#fff;margin-bottom:1rem}
+.rbox .rl{font-size:11px;opacity:.7;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.rbox .rv{font-family:'Playfair Display',serif;font-size:34px;font-weight:400}
+.rbox .rs{font-size:12px;opacity:.75;margin-top:4px}
+.rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+.rm{background:rgba(255,255,255,.13);border-radius:6px;padding:10px 12px}
+.rm .ml{font-size:11px;opacity:.7;margin-bottom:2px}
+.rm .mv{font-size:14px;font-weight:500}
+.bdown{font-size:13px}
+.br{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #eee}
+.br:last-child{border-bottom:none;font-weight:500}
+.br.pos{color:#2e7d52}.br.neg{color:#b53a3a}
+.btnp{background:var(--v);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-family:'Open Sans',sans-serif;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.btnp:hover{background:var(--v2)}
+.btns{background:none;color:var(--v);border:1px solid var(--vb);border-radius:6px;padding:9px 22px;font-size:13px;font-family:'Open Sans',sans-serif;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.btns:hover{background:var(--vl)}
+.dtable{width:100%;border-collapse:collapse;font-size:13px}
+.dtable th{text-align:left;padding:6px 8px;font-size:11px;font-weight:500;color:#999;border-bottom:0.5px solid #eee;text-transform:uppercase;letter-spacing:.04em}
+.dtable td{padding:6px 8px;border-bottom:0.5px solid #f0f0f0;vertical-align:middle}
+.dtable tr:last-child td{border-bottom:none}
+.dtable td input[type=text],.dtable td input[type=number]{width:100%;background:none;border:none;font-size:13px;font-family:'Open Sans',sans-serif;color:#1a1a1a}
+.dtable td input:focus{outline:1px solid var(--vb);border-radius:3px}
+.addbtn{font-size:13px;color:var(--v);background:none;border:1px dashed var(--vb);border-radius:6px;padding:6px 14px;cursor:pointer;margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.addbtn:hover{background:var(--vl)}
+.delbtn{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:2px 6px}
+.delbtn:hover{color:#b53a3a}
+.chip{display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:7px 14px;border-radius:6px;border:1px solid #ddd;font-size:13px;background:#fafafa;user-select:none;transition:all .15s}
+.chip.on{background:var(--vl);border-color:var(--vb);color:var(--v);font-weight:500}
+.chip input[type=checkbox]{accent-color:var(--v);width:14px;height:14px}
+.dilig-grid{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.dilig-chip{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:6px;border:1px solid #ddd;background:#fafafa;cursor:pointer;user-select:none;transition:all .15s}
+.dilig-chip.on{background:var(--vl);border-color:var(--vb)}
+.dilig-chip-left{display:flex;align-items:center;gap:10px}
+.dilig-chip-left input[type=checkbox]{accent-color:var(--v);width:14px;height:14px;pointer-events:none}
+.dilig-chip-name{font-size:13px;color:#1a1a1a}
+.dilig-chip.on .dilig-chip-name{color:var(--v);font-weight:500}
+.dilig-chip-horas{font-size:12px;color:#aaa}
+.dilig-chip.on .dilig-chip-horas{color:var(--vb)}
+.check-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.check-item{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;border:0.5px solid #eee;background:#fafafa}
+.check-item input{accent-color:var(--v)}
+
+/* ── CAPA COM IMAGEM ── */
+.pcapa{page-break-after:always;position:relative;overflow:hidden;background:#fff}
+
+/* slot da imagem de capa */
+.cap-img-slot{
+  width:100%;
+  min-height:820px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  background:#faf9f7;
+  overflow:hidden;
+}
+.cap-img-slot img.cap-foto{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  position:absolute;
+  top:0;left:0;
+  display:block;
+}
+
+/* overlay de dados sobre a foto — aparece quando há imagem */
+.cap-overlay{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  padding:2rem 2.5rem;
+  background:linear-gradient(to top, rgba(107,26,42,0.82) 0%, transparent 100%);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  z-index:2;
+}
+.cap-overlay-l{display:flex;flex-direction:column;gap:4px}
+.cap-overlay-nome{font-family:'Playfair Display',serif;font-style:italic;font-size:17px;color:#fff;font-weight:400}
+.cap-overlay-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.cap-overlay-date{font-size:11px;color:rgba(255,255,255,.45);font-style:italic;margin-top:2px}
+.cap-overlay-r{text-align:right;display:flex;flex-direction:column;gap:4px}
+.cap-overlay-oab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+
+/* placeholder quando não há imagem */
+.cap-placeholder{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  min-height:820px;
+  color:#bbb;
+  font-size:13px;
+  text-align:center;
+  padding:2rem;
+}
+.cap-placeholder svg{opacity:.35}
+.cap-upload-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 20px;border-radius:6px;
+  background:var(--v);color:#fff;border:none;
+  font-size:13px;font-family:'Open Sans',sans-serif;
+  cursor:pointer;margin-top:8px;
+}
+.cap-upload-btn:hover{background:var(--v2)}
+
+/* barra de ação na capa (só tela, não imprime) */
+.cap-toolbar{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  background:#fdf8f9;
+  border-bottom:0.5px solid #f0d0d8;
+}
+.cap-toolbar label{font-size:12px;color:#888}
+
+/* PROPOSTA */
+.pwrap{background:#e0dbd5;border-radius:var(--r);padding:1.5rem}
+.pdoc{background:#fff;max-width:760px;margin:0 auto;font-family:'Open Sans',sans-serif;color:#2a2a2a;line-height:1.8}
+.pbody{padding:2.5rem 3rem;font-size:13px}
+.prop-to{margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:0.5px solid #ddd}
+.prop-to .toname{font-size:15px;font-weight:500}
+.prop-to .todate{color:#888;font-style:italic;margin-top:2px;font-size:13px}
+.ph2{font-family:'Playfair Display',serif;font-style:italic;font-size:16px;font-weight:400;color:var(--v);margin:1.75rem 0 .75rem}
+.ph3{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.ptable{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem}
+.ptable td{padding:8px 12px}
+.ptable tr:first-child td{background:#f5eaed;font-weight:500}
+.ptable tr:nth-child(even) td{background:#fafafa}
+.ptable .bold{font-weight:500;font-size:14px}
+.ptable .vt{color:var(--v);font-weight:500}
+.pobs{border-left:3px solid var(--vb);padding:12px 16px;background:#fdf8f9;border-radius:0 6px 6px 0;font-size:13px;margin-bottom:1rem}
+.pfooter{border-top:1.5px solid var(--v);margin-top:2rem;padding-top:1rem;display:flex;justify-content:space-between;font-size:11px;color:var(--v)}
+.psign{text-align:right;margin-top:3rem}
+.psign .signame{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:#1a1a1a}
+.psign .sigoab{font-family:'Open Sans',sans-serif;font-size:12px;color:#1a1a1a;margin-top:3px}
+.ped{border:none;background:transparent;font-family:'Open Sans',sans-serif;font-size:inherit;color:inherit;width:100%;resize:none;line-height:1.8}
+.ped:focus{outline:1px dashed var(--vb);border-radius:3px}
+.pedi{border:none;background:transparent;font-family:'Open Sans',sans-serif;font-size:inherit;color:inherit;border-bottom:1px dashed var(--vb)}
+.pedi:focus{outline:none}
+.ehint{font-size:11px;color:#bbb;margin-bottom:1rem;display:flex;align-items:center;gap:4px}
+
+@media print{
+  body{background:#fff}
+  .app{max-width:100%;padding:0}
+  .no-print{display:none!important}
+  .pwrap{background:#fff;padding:0}
+  .ped,.pedi{border:none!important;outline:none!important}
+  h1.app-title,.tabs{display:none}
+  .cap-toolbar{display:none!important}
+  .cap-placeholder{display:none!important}
+  .cap-img-slot{min-height:100vh}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<h1 class="app-title">Calculadora de Honorários</h1>
+
+<div class="tabs no-print">
+  <button class="tb active" onclick="st('calc')">⚖ Calculadora</button>
+  <button class="tb" onclick="st('config')">⚙ Configurações</button>
+  <button class="tb" onclick="st('prop')">📄 Proposta</button>
+</div>
+
+<!-- CALCULADORA -->
+<div class="panel active" id="panel-calc">
+  <div class="sec">
+    <div class="stitle">Tipo de demanda</div>
+    <div class="row2">
+      <div class="field"><label>Demanda</label>
+        <select id="sel-d" onchange="onD()"><option value="">— selecione —</option></select></div>
+      <div class="field"><label>Valor/hora (R$)</label>
+        <input type="number" id="inp-vh" min="1" value="120" oninput="calc()"/></div>
+    </div>
+    <div class="field" style="margin-bottom:8px"><label>Horas totais (calculadas pelas diligências ativas)</label>
+      <input type="text" id="inp-base-h" readonly style="background:#f5eaed;font-weight:500;width:200px"/>
+    </div>
+    <div class="field"><label>Valor base</label>
+      <input type="text" id="inp-base" readonly style="background:#f5eaed;font-weight:500;width:200px"/></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">Diligências do caso</div>
+    <div class="fhint" style="margin-bottom:10px">Ative as diligências aplicáveis. As horas são somadas automaticamente.</div>
+    <div class="dilig-grid" id="dilig-grid"></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">Variáveis de ajuste</div>
+    <div class="field" style="margin-bottom:14px"><label>Grau de litigiosidade</label>
+      <select id="sel-lit" onchange="calc()">
+        <option value="0">Baixo — sem acréscimo</option>
+        <option value="0.15">Médio — +15%</option>
+        <option value="0.30" selected>Alto — +30%</option>
+      </select></div>
+    <div class="field" style="margin-bottom:14px"><label>Urgência</label>
+      <select id="sel-urg" onchange="calc()">
+        <option value="0">Normal — sem acréscimo</option>
+        <option value="0.20">Urgente — +20%</option>
+        <option value="0.40">Emergencial — +40%</option>
+      </select></div>
+    <div class="field" style="margin-bottom:14px"><label>Ganho patrimonial envolvido (R$)</label>
+      <input type="number" id="inp-pat" min="0" value="0" oninput="calc()" placeholder="0"/>
+      <div class="fhint">percentual aplicado conforme faixa configurada</div></div>
+    <div class="field" style="margin-bottom:14px"><label>Margem do escritório: <span id="lbl-mg">20%</span></label>
+      <div class="srow"><input type="range" id="sl-mg" min="0" max="50" step="1" value="20" oninput="onSl('mg',this)"/>
+      <span class="sv" id="sv-mg">20%</span></div></div>
+    <div class="field" style="margin-bottom:14px"><label>Desconto: <span id="lbl-dc">0%</span></label>
+      <div class="srow"><input type="range" id="sl-dc" min="0" max="30" step="1" value="0" oninput="onSl('dc',this)"/>
+      <span class="sv" id="sv-dc">0%</span></div></div>
+    <div class="field" style="margin-bottom:14px"><label>Entrada (parcelamento): <span id="lbl-en">20%</span></label>
+      <div class="srow"><input type="range" id="sl-en" min="10" max="50" step="5" value="20" oninput="onSl('en',this)"/>
+      <span class="sv" id="sv-en">20%</span></div></div>
+    <div class="field" style="margin-bottom:14px"><label>Número de parcelas: <span id="lbl-parc">20x</span></label>
+      <div class="srow"><input type="range" id="sl-parc" min="2" max="24" step="1" value="20" oninput="onSlParc(this)"/>
+      <span class="sv" id="sv-parc">20x</span></div></div>
+    <div style="margin-top:4px;display:flex;flex-direction:column;gap:10px">
+      <label class="chip" id="chip-consulta" onclick="toggleC('chk-c','chip-consulta')">
+        <input type="checkbox" id="chk-c" style="pointer-events:none"/> Consulta paga — descontar da proposta
+      </label>
+      <label class="chip" id="chip-desconto2" onclick="toggleC('chk-d2','chip-desconto2')">
+        <input type="checkbox" id="chk-d2" style="pointer-events:none"/> Valor já pago — descontar da proposta
+      </label>
+      <div id="box-desconto2" style="display:none">
+        <div class="field">
+          <label>Valor já pago (R$)</label>
+          <input type="number" id="inp-d2" min="0" value="0" oninput="calc()" placeholder="0"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rbox">
+    <div class="rl">Honorários sugeridos — 1ª Instância</div>
+    <div class="rv" id="res-tot">R$ 0,00</div>
+    <div class="rs" id="res-sub">—</div>
+    <div class="rgrid">
+      <div class="rm"><div class="ml">À vista (−10%)</div><div class="mv" id="res-av">—</div></div>
+      <div class="rm"><div class="ml">Entrada (<span id="res-en-pct">20</span>%)</div><div class="mv" id="res-en">—</div></div>
+      <div class="rm"><div class="ml">Parcela em <span id="res-parc-n">20</span>x</div><div class="mv" id="res-parc">—</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">Detalhamento</div>
+    <div class="bdown" id="bdown"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:1rem">
+    <button class="btnp" onclick="irProp()">📄 Gerar proposta de honorários</button>
+  </div>
+</div>
+
+<!-- CONFIGURAÇÕES -->
+<div class="panel" id="panel-config">
+  <div class="sec">
+    <div class="stitle">Diligências</div>
+    <div style="font-size:12px;color:#bbb;margin-bottom:12px">Cadastre todas as diligências possíveis com as horas estimadas para cada uma.</div>
+    <table class="dtable">
+      <thead><tr><th>Nome da diligência</th><th style="width:100px">Horas</th><th style="width:36px"></th></tr></thead>
+      <tbody id="dilig-tbody"></tbody>
+    </table>
+    <button class="addbtn" onclick="addDilig()">+ Adicionar diligência</button>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">Tipos de demanda</div>
+    <div style="font-size:12px;color:#bbb;margin-bottom:12px">Para cada demanda, selecione quais diligências fazem parte do padrão.</div>
+    <div id="demands-cfg"></div>
+    <button class="addbtn" onclick="addDemand()">+ Adicionar demanda</button>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">Percentual sobre ganho patrimonial</div>
+    <div class="row3">
+      <div class="field"><label>Até R$ 100 mil</label>
+        <div style="display:flex;align-items:center;gap:6px"><input type="number" id="pt1" min="0" max="20" step="0.5" value="2" oninput="calc()"/><span style="font-size:13px;color:#aaa">%</span></div></div>
+      <div class="field"><label>R$ 100k – R$ 500k</label>
+        <div style="display:flex;align-items:center;gap:6px"><input type="number" id="pt2" min="0" max="20" step="0.5" value="1.5" oninput="calc()"/><span style="font-size:13px;color:#aaa">%</span></div></div>
+      <div class="field"><label>Acima de R$ 500k</label>
+        <div style="display:flex;align-items:center;gap:6px"><input type="number" id="pt3" min="0" max="20" step="0.5" value="1" oninput="calc()"/><span style="font-size:13px;color:#aaa">%</span></div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="stitle">Honorários — 2ª Instância</div>
+    <div class="row2">
+      <div class="field"><label>Valor por recurso (R$)</label>
+        <input type="number" id="cfg-i2v" value="2500" min="0"/></div>
+      <div class="field"><label>Descrição na proposta</label>
+        <input type="text" id="cfg-i2d" value="Honorários para atuação em Tribunal Estadual (por recurso necessário)"/></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="stitle">Consulta</div>
+    <div class="row2">
+      <div class="field"><label>Valor da consulta (R$)</label>
+        <input type="number" id="cfg-cons" value="300" min="0"/></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="stitle">Dados do escritório</div>
+    <div class="row2">
+      <div class="field"><label>Telefone</label><input type="text" id="cfg-tel" value="(14) 99730-5586"/></div>
+      <div class="field"><label>Instagram</label><input type="text" id="cfg-insta" value="@ellenvvicentim"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Site</label><input type="text" id="cfg-site" value="www.ellenvicentim.com.br"/></div>
+      <div class="field"><label>E-mail</label><input type="text" id="cfg-email" value="contato@ellenvicentim.com.br"/></div>
+    </div>
+  </div>
+  <button class="btnp" onclick="saveConf()">✓ Salvar configurações</button>
+  <span id="cfg-ok" style="font-size:13px;color:#2e7d52;margin-left:12px;display:none">✓ Salvo!</span>
+</div>
+
+<!-- PROPOSTA -->
+<div class="panel" id="panel-prop">
+  <div class="ehint no-print">✏ Campos sublinhados são editáveis diretamente na proposta</div>
+  <div style="display:flex;gap:10px;margin-bottom:1rem" class="no-print">
+    <button class="btnp" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+    <button class="btns" onclick="st('calc')">← Voltar</button>
+  </div>
+  <div class="pwrap">
+  <div class="pdoc">
+
+    <!-- CAPA COM IMAGEM -->
+    <div class="pcapa">
+
+      <!-- toolbar só na tela -->
+      <div class="cap-toolbar no-print">
+        <label style="font-size:12px;color:#666;font-weight:500">🖼 Imagem de capa:</label>
+        <label class="cap-upload-btn">
+          📁 Selecionar imagem
+          <input type="file" accept="image/*" style="display:none" onchange="carregarCapa(this)"/>
+        </label>
+        <span id="cap-nome-arquivo" style="font-size:12px;color:#aaa;margin-left:4px"></span>
+        <button class="btns" onclick="removerCapa()" id="btn-remover-capa" style="display:none;padding:6px 14px;font-size:12px">✕ Remover</button>
+      </div>
+
+      <!-- slot da imagem -->
+      <div class="cap-img-slot" id="cap-slot">
+
+        <!-- placeholder (visível quando não há imagem) -->
+        <div class="cap-placeholder no-print" id="cap-placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <div>Selecione a imagem da proposta acima<br>para usá-la como capa do documento.</div>
+        </div>
+
+        <!-- overlay com dados da cliente (aparece sobre a foto) -->
+        <div class="cap-overlay" id="cap-overlay" style="display:none">
+          <div class="cap-overlay-l">
+            <div class="cap-overlay-label">Aos cuidados de</div>
+            <div class="cap-overlay-nome" id="capa-cname-ov">[Nome da cliente]</div>
+            <div class="cap-overlay-date" id="capa-date-ov"></div>
+          </div>
+          <div class="cap-overlay-r">
+            <div class="cap-overlay-oab">Ellen Vicentim · OAB/SP 411.976</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CORPO DA PROPOSTA -->
+    <div class="pbody">
+      <div class="prop-to">
+        <div class="toname">Aos cuidados de <input class="pedi" id="prop-cliente" type="text" value="[Nome da cliente]" style="min-width:220px" oninput="sincCliente()"/></div>
+        <div class="todate" id="prop-dateline"></div>
+      </div>
+
+      <div class="ph2">O escritório e a nossa missão</div>
+      <textarea class="ped" id="prop-missao" rows="9">Acreditamos que o encerramento de ciclos familiares ou sucessórios não apaga a história de uma mulher, mas exige uma nova fundação baseada em autonomia e proteção.
+
+Nossa filosofia é clara: patrimônio e direitos são instrumentos de segurança, não de ganância. Rejeitamos a ideia de que abrir mão de garantias gera paz; a verdadeira tranquilidade nasce da informação e da firmeza estratégica.
+
+Liderado por Ellen Venturini Vicentim, advogada desde 2018, formada pela Universidade Estadual do Norte do Paraná (UENP) e pós-graduada em Direito Civil, Processo Civil e Direito do Estado. Com equipe exclusivamente feminina, operamos sob um modelo boutique: priorizamos um número reduzido de casos para garantir uma atenção artesanal e uma combatividade estratégica de alta performance.</textarea>
+
+      <div class="ph2">Escopo e desenvolvimento do trabalho</div>
+      <div class="ph3">Serviço a ser prestado</div>
+      <input class="pedi" id="prop-servico" type="text" value="" style="display:block;width:100%;margin-bottom:1.25rem;font-size:14px"/>
+      <div class="ph3">Diligências compreendidas</div>
+      <textarea class="ped" id="prop-dilig" rows="7"></textarea>
+
+      <div class="ph2">Investimento</div>
+      <div style="font-size:13px;margin-bottom:12px;color:#666">Os honorários advocatícios são calculados a partir da média de horas dedicadas exclusivamente à demanda durante todo o transcorrer do processo.</div>
+      <table class="ptable" style="text-align:center">
+        <tr><td colspan="2">Valor total para atuação em Primeira Instância</td></tr>
+        <tr id="pt-cons-row" style="display:none"><td style="width:60%;text-align:left">Consulta (descontada)</td><td class="bold" id="pt-cons-val" style="color:#888">—</td></tr>
+        <tr id="pt-d2-row" style="display:none"><td style="text-align:left">Valor já pago (descontado)</td><td class="bold" id="pt-d2-val" style="color:#888">—</td></tr>
+        <tr><td style="width:60%;text-align:left">Valor calculado</td><td class="bold" id="pt-tot">—</td></tr>
+        <tr><td style="text-align:left">Valor a ser pago</td><td class="bold vt" id="pt-pagar">—</td></tr>
+      </table>
+
+      <div class="ph2">Formas de pagamento</div>
+      <table class="ptable">
+        <tr><td colspan="2">Opções disponíveis</td></tr>
+        <tr><td style="width:60%">À vista (desconto de 10%)</td><td class="bold" id="pt-av">—</td></tr>
+        <tr><td>Cartão ou boleto em até <span id="pt-nparc">20</span>x<br><span style="font-size:11px;color:#aaa">(entrada de <span id="pt-enpct">20</span>%)</span></td>
+        <td><div id="pt-en" style="font-size:13px">Entrada: —</div><div id="pt-parc" style="font-size:13px">Parcelas: —</div></td></tr>
+      </table>
+
+      <div class="ph2">Atuação em 2ª Instância</div>
+      <table class="ptable">
+        <tr><td colspan="2">Honorários adicionais</td></tr>
+        <tr><td id="prop-i2d" style="width:70%"></td><td class="bold vt" id="prop-i2v">—</td></tr>
+      </table>
+      <div style="font-size:12px;color:#888;margin-bottom:1rem">Valor incide a cada recurso necessário, mediante recomendação do escritório.</div>
+
+      <div class="ph2">Observações</div>
+      <div class="pobs">
+        <textarea class="ped" id="prop-obs" rows="8">• O pagamento à vista garante desconto de 10% no valor total.
+• Parcelamento disponível via cartão de crédito (cobrança normal ou recorrente) e boleto em até 20x, mediante o pagamento de entrada conforme acordado.
+• O investimento acima abrange apenas a atuação em primeira instância.
+• Havendo necessidade de interposição de recursos ao Tribunal do Estado, incidirá honorário adicional conforme indicado acima.
+• A contratação para atuação perante o Superior Tribunal de Justiça (STJ) ou o Supremo Tribunal Federal (STF) é realizada separadamente, mediante proposta específica.
+• Eventuais custas processuais, certidões ou despesas de diligências são de responsabilidade da parte contratante e não estão incluídas nos honorários.
+• Esta proposta tem validade de 05 (cinco) dias.</textarea>
+      </div>
+
+      <div style="font-size:13px;margin-top:1.5rem">
+        <span>Ourinhos, </span><span id="prop-data-ext"></span>
+      </div>
+      <div class="psign">
+        <div class="signame">Ellen Venturini Vicentim</div>
+        <div class="sigoab">OAB/SP nº 411.976</div>
+      </div>
+      <div class="pfooter">
+        <span id="pfl"></span><span id="pfr"></span>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+</div>
+
+<script>
+var diligencias = [
+  {id:1, nome:"Pesquisa e localização de titulares de domínio e confrontantes", horas:8},
+  {id:2, nome:"Organização de documentos", horas:4},
+  {id:3, nome:"Elaboração de petição inicial", horas:10},
+  {id:4, nome:"Elaboração de manifestações processuais", horas:6},
+  {id:5, nome:"Acompanhamento e preparação para audiências", horas:8},
+  {id:6, nome:"Acompanhamento de perícias técnicas", horas:6},
+  {id:7, nome:"Envio de relatórios mensais", horas:2},
+  {id:8, nome:"Intermédio em negociações", horas:5},
+  {id:9, nome:"Análise patrimonial e levantamento de bens", horas:8},
+  {id:10, nome:"Orientação e registro de boletim de ocorrência", horas:3},
+  {id:11, nome:"Elaboração de pedido de medidas protetivas", horas:5},
+];
+var nextDiligId = 12;
+var demands = [
+  {id:1, nome:"Ação de usucapião urbana", diligIds:[1,2,3,4,5,6,7,8]},
+  {id:2, nome:"Divórcio litigioso", diligIds:[2,3,4,5,7,8,9]},
+  {id:3, nome:"Inventário e partilha", diligIds:[2,3,4,5,6,7,8,9]},
+  {id:4, nome:"Guarda e alimentos", diligIds:[3,4,5,7]},
+  {id:5, nome:"Violência doméstica (medidas protetivas)", diligIds:[10,11,5,7]},
+];
+var nextDemandId = 6;
+var activeDigIds = {};
+
+function fmt(v){return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function eh(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── CAPA — upload de imagem ── */
+function carregarCapa(input){
+  if(!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var slot=document.getElementById('cap-slot');
+    var ph=document.getElementById('cap-placeholder');
+    var ov=document.getElementById('cap-overlay');
+    var existing=slot.querySelector('img.cap-foto');
+    if(existing) existing.remove();
+    var img=document.createElement('img');
+    img.className='cap-foto';
+    img.src=e.target.result;
+    slot.insertBefore(img,slot.firstChild);
+    if(ph) ph.style.display='none';
+    if(ov) ov.style.display='flex';
+    document.getElementById('cap-nome-arquivo').textContent=input.files[0].name;
+    document.getElementById('btn-remover-capa').style.display='inline-flex';
+    slot.style.minHeight='820px';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function removerCapa(){
+  var slot=document.getElementById('cap-slot');
+  var existing=slot.querySelector('img.cap-foto');
+  if(existing) existing.remove();
+  document.getElementById('cap-placeholder').style.display='flex';
+  document.getElementById('cap-overlay').style.display='none';
+  document.getElementById('cap-nome-arquivo').textContent='';
+  document.getElementById('btn-remover-capa').style.display='none';
+}
+
+function sincCliente(){
+  var v=document.getElementById('prop-cliente').value||'[Nome da cliente]';
+  var el=document.getElementById('capa-cname-ov');
+  if(el) el.textContent=v;
+}
+
+/* ── CALCULADORA ── */
+function onSl(id,el){
+  document.getElementById('lbl-'+id).textContent=el.value+'%';
+  document.getElementById('sv-'+id).textContent=el.value+'%';
+  if(id==='en') document.getElementById('res-en-pct').textContent=el.value;
+  calc();
+}
+function onSlParc(el){
+  document.getElementById('lbl-parc').textContent=el.value+'x';
+  document.getElementById('sv-parc').textContent=el.value+'x';
+  document.getElementById('res-parc-n').textContent=el.value;
+  calc();
+}
+function toggleC(chkId,chipId){
+  var chk=document.getElementById(chkId);
+  chk.checked=!chk.checked;
+  document.getElementById(chipId).classList.toggle('on',chk.checked);
+  if(chkId==='chk-d2') document.getElementById('box-desconto2').style.display=chk.checked?'block':'none';
+  calc();
+}
+function onD(){
+  var idx=parseInt(document.getElementById('sel-d').value);
+  if(isNaN(idx)){activeDigIds={};renderDigGrid();calc();return;}
+  var d=demands.find(function(x){return x.id===idx;});
+  activeDigIds={};
+  if(d) d.diligIds.forEach(function(id){activeDigIds[id]=true;});
+  document.getElementById('prop-servico').value=d?d.nome:'';
+  renderDigGrid(); calc();
+}
+function toggleDilig(id){
+  activeDigIds[id]=!activeDigIds[id];
+  var chip=document.getElementById('dc-'+id);
+  if(chip) chip.classList.toggle('on',!!activeDigIds[id]);
+  var chk=document.getElementById('dcc-'+id);
+  if(chk) chk.checked=!!activeDigIds[id];
+  calc();
+}
+function renderDigGrid(){
+  var g=document.getElementById('dilig-grid'); g.innerHTML='';
+  diligencias.forEach(function(d){
+    var on=!!activeDigIds[d.id];
+    var div=document.createElement('div');
+    div.className='dilig-chip'+(on?' on':'');
+    div.id='dc-'+d.id;
+    div.onclick=function(){toggleDilig(d.id);};
+    div.innerHTML='<div class="dilig-chip-left">'
+      +'<input type="checkbox" id="dcc-'+d.id+'"'+(on?' checked':'')+'/>'
+      +'<span class="dilig-chip-name">'+eh(d.nome)+'</span>'
+      +'</div>'
+      +'<span class="dilig-chip-horas">'+d.horas+'h</span>';
+    g.appendChild(div);
+  });
+}
+function calc(){
+  var hora=parseFloat(document.getElementById('inp-vh').value)||0;
+  var totalH=0;
+  diligencias.forEach(function(d){if(activeDigIds[d.id]) totalH+=d.horas;});
+  document.getElementById('inp-base-h').value=totalH+'h';
+  var base=hora*totalH;
+  document.getElementById('inp-base').value=fmt(base);
+  var lit=parseFloat(document.getElementById('sel-lit').value)||0;
+  var urg=parseFloat(document.getElementById('sel-urg').value)||0;
+  var pat=parseFloat(document.getElementById('inp-pat').value)||0;
+  var mg=parseFloat(document.getElementById('sl-mg').value)/100;
+  var dc=parseFloat(document.getElementById('sl-dc').value)/100;
+  var en=parseFloat(document.getElementById('sl-en').value)/100;
+  var t1=parseFloat(document.getElementById('pt1').value)/100||0.02;
+  var t2=parseFloat(document.getElementById('pt2').value)/100||0.015;
+  var t3=parseFloat(document.getElementById('pt3').value)/100||0.01;
+  var patPct=0; if(pat>0){patPct=pat<=100000?t1:pat<=500000?t2:t3;}
+  var ajuste=base*(lit+urg+patPct);
+  var sub=base+ajuste;
+  var mgV=sub*mg;
+  var bruto=sub+mgV;
+  var dcV=bruto*dc;
+  var total=bruto-dcV;
+  var consOn=document.getElementById('chk-c').checked;
+  var consVal=consOn?(parseFloat(document.getElementById('cfg-cons').value)||0):0;
+  var d2On=document.getElementById('chk-d2').checked;
+  var d2Val=d2On?(parseFloat(document.getElementById('inp-d2').value)||0):0;
+  var pagar=total-consVal-d2Val;
+  var avista=pagar*0.9;
+  var entrada=pagar*en;
+  var nParc=parseInt(document.getElementById('sl-parc').value)||20;
+  var parcela=(pagar-entrada)/nParc;
+  document.getElementById('res-tot').textContent=fmt(pagar);
+  document.getElementById('res-sub').textContent=totalH+'h × '+fmt(hora)+'/h';
+  document.getElementById('res-av').textContent=fmt(avista);
+  document.getElementById('res-en').textContent=fmt(entrada);
+  document.getElementById('res-parc').textContent=fmt(parcela)+'/mês';
+  var bd=document.getElementById('bdown'); bd.innerHTML='';
+  [['Valor base ('+totalH+'h × '+fmt(hora)+')',base,''],
+   lit>0?['+ Litigiosidade ('+(lit*100).toFixed(0)+'%)',base*lit,'pos']:null,
+   urg>0?['+ Urgência ('+(urg*100).toFixed(0)+'%)',base*urg,'pos']:null,
+   pat>0?['+ Ganho patrimonial ('+(patPct*100).toFixed(1)+'%)',base*patPct,'pos']:null,
+   mg>0?['+ Margem ('+(mg*100).toFixed(0)+'%)',mgV,'pos']:null,
+   dc>0?['− Desconto ('+(dc*100).toFixed(0)+'%)',-dcV,'neg']:null,
+   consOn&&consVal>0?['− Consulta paga',-consVal,'neg']:null,
+   d2On&&d2Val>0?['− Valor já pago',-d2Val,'neg']:null,
+   ['= Total a ser pago',pagar,''],
+  ].forEach(function(r){
+    if(!r)return;
+    var d=document.createElement('div');
+    d.className='br '+r[2];
+    d.innerHTML='<span>'+r[0]+'</span><span>'+fmt(Math.abs(r[1]))+'</span>';
+    bd.appendChild(d);
+  });
+  window._c={total:total,pagar:pagar,avista:avista,entrada:entrada,parcela:parcela,
+    nParc:nParc,enPct:Math.round(en*100),consOn:consOn,consVal:consVal,d2On:d2On,d2Val:d2Val,
+    totalH:totalH,hora:hora};
+}
+
+/* ── CONFIGURAÇÕES ── */
+function renderDiligTable(){
+  var tb=document.getElementById('dilig-tbody'); tb.innerHTML='';
+  diligencias.forEach(function(d,i){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><input type="text" value="'+eh(d.nome)+'" oninput="diligencias['+i+'].nome=this.value;renderDigGrid();renderDemandsCfg()"/></td>'
+      +'<td><input type="number" min="0" step="0.5" value="'+d.horas+'" oninput="diligencias['+i+'].horas=parseFloat(this.value)||0;renderDigGrid();calc()" style="width:70px"/></td>'
+      +'<td><button class="delbtn" onclick="delDilig('+i+')">✕</button></td>';
+    tb.appendChild(tr);
+  });
+  renderDemandsCfg();
+}
+function addDilig(){
+  diligencias.push({id:nextDiligId++,nome:'Nova diligência',horas:2});
+  renderDiligTable(); renderDigGrid();
+}
+function delDilig(i){
+  var id=diligencias[i].id;
+  diligencias.splice(i,1);
+  demands.forEach(function(d){d.diligIds=d.diligIds.filter(function(x){return x!==id;});});
+  delete activeDigIds[id];
+  renderDiligTable(); renderDigGrid(); calc();
+}
+function renderDemandsCfg(){
+  var c=document.getElementById('demands-cfg'); c.innerHTML='';
+  demands.forEach(function(d,di){
+    var div=document.createElement('div');
+    div.style.cssText='background:#fafafa;border:0.5px solid #eee;border-radius:6px;padding:12px;margin-bottom:10px';
+    var header='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+      +'<input type="text" value="'+eh(d.nome)+'" style="flex:1;font-size:13px;font-family:Open Sans,sans-serif;border:0.5px solid #ccc;border-radius:6px;padding:6px 10px;background:#fff" oninput="demands['+di+'].nome=this.value;popSel()"/>'
+      +'<button class="delbtn" onclick="delDemand('+di+')">✕</button>'
+      +'</div>';
+    var checks='<div class="check-grid">';
+    diligencias.forEach(function(dil){
+      var chk=d.diligIds.indexOf(dil.id)>-1;
+      checks+='<label class="check-item">'
+        +'<input type="checkbox"'+(chk?' checked':'')+' onchange="toggleDemandDilig('+di+','+dil.id+',this.checked)"/>'
+        +eh(dil.nome)+' ('+dil.horas+'h)'
+        +'</label>';
+    });
+    checks+='</div>';
+    div.innerHTML=header+checks;
+    c.appendChild(div);
+  });
+}
+function toggleDemandDilig(di,diligId,checked){
+  if(checked){if(demands[di].diligIds.indexOf(diligId)===-1) demands[di].diligIds.push(diligId);}
+  else{demands[di].diligIds=demands[di].diligIds.filter(function(x){return x!==diligId;});}
+}
+function addDemand(){demands.push({id:nextDemandId++,nome:'Nova demanda',diligIds:[]});renderDemandsCfg();popSel();}
+function delDemand(i){demands.splice(i,1);renderDemandsCfg();popSel();}
+function popSel(){
+  var sel=document.getElementById('sel-d');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— selecione —</option>';
+  demands.forEach(function(d){
+    var o=document.createElement('option');
+    o.value=d.id; o.textContent=d.nome;
+    sel.appendChild(o);
+  });
+  if(cur!=='') sel.value=cur;
+}
+
+/* ── PROPOSTA ── */
+function updProp(){
+  var c=window._c||{};
+  var now=new Date();
+  var ms=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var dext=now.getDate()+' de '+ms[now.getMonth()]+' de '+now.getFullYear();
+  document.getElementById('prop-dateline').textContent='Conforme atendimento realizado em '+dext;
+  document.getElementById('prop-data-ext').textContent=dext+'.';
+  var dateOv=document.getElementById('capa-date-ov');
+  if(dateOv) dateOv.textContent=dext;
+  sincCliente();
+  var diligAtivas=diligencias.filter(function(d){return activeDigIds[d.id];});
+  document.getElementById('prop-dilig').value=diligAtivas.map(function(d){return '• '+d.nome;}).join('\n');
+  if(c.pagar!=null){
+    document.getElementById('pt-tot').textContent=fmt(c.total);
+    document.getElementById('pt-pagar').textContent=fmt(c.pagar);
+    document.getElementById('pt-av').textContent=fmt(c.avista);
+    document.getElementById('pt-enpct').textContent=c.enPct;
+    document.getElementById('pt-nparc').textContent=c.nParc||20;
+    document.getElementById('pt-en').textContent='Entrada: '+fmt(c.entrada);
+    document.getElementById('pt-parc').textContent=(c.nParc||20)+'x de '+fmt(c.parcela);
+    var cr=document.getElementById('pt-cons-row');
+    if(c.consOn&&c.consVal>0){cr.style.display='';document.getElementById('pt-cons-val').textContent='− '+fmt(c.consVal);}
+    else cr.style.display='none';
+    var dr=document.getElementById('pt-d2-row');
+    if(c.d2On&&c.d2Val>0){dr.style.display='';document.getElementById('pt-d2-val').textContent='− '+fmt(c.d2Val);}
+    else dr.style.display='none';
+  }
+  document.getElementById('prop-i2d').textContent=document.getElementById('cfg-i2d').value;
+  document.getElementById('prop-i2v').textContent=fmt(parseFloat(document.getElementById('cfg-i2v').value)||0);
+  var tel=document.getElementById('cfg-tel').value;
+  var inst=document.getElementById('cfg-insta').value;
+  var site=document.getElementById('cfg-site').value;
+  var email=document.getElementById('cfg-email').value;
+  document.getElementById('pfl').textContent=tel+' | '+inst;
+  document.getElementById('pfr').textContent=site+' | '+email;
+}
+function irProp(){updProp();st('prop');}
+
+/* ── TABS ── */
+function st(id){
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  var map={calc:0,config:1,prop:2};
+  document.querySelectorAll('.tb')[map[id]].classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+/* ── PERSISTÊNCIA ── */
+function saveConf(){
+  var cfg={
+    diligencias:diligencias,nextDiligId:nextDiligId,
+    demands:demands,nextDemandId:nextDemandId,
+    pt1:document.getElementById('pt1').value,
+    pt2:document.getElementById('pt2').value,
+    pt3:document.getElementById('pt3').value,
+    i2v:document.getElementById('cfg-i2v').value,
+    i2d:document.getElementById('cfg-i2d').value,
+    cons:document.getElementById('cfg-cons').value,
+    tel:document.getElementById('cfg-tel').value,
+    insta:document.getElementById('cfg-insta').value,
+    site:document.getElementById('cfg-site').value,
+    email:document.getElementById('cfg-email').value,
+  };
+  try{localStorage.setItem('ev_config',JSON.stringify(cfg));}catch(e){}
+  popSel(); renderDiligTable(); renderDigGrid();
+  var ok=document.getElementById('cfg-ok');
+  ok.style.display='inline';
+  setTimeout(function(){ok.style.display='none';},2000);
+}
+function loadConf(){
+  try{
+    var raw=localStorage.getItem('ev_config');
+    if(!raw)return;
+    var cfg=JSON.parse(raw);
+    if(cfg.diligencias&&cfg.diligencias.length){diligencias=cfg.diligencias;nextDiligId=cfg.nextDiligId||50;}
+    if(cfg.demands&&cfg.demands.length){demands=cfg.demands;nextDemandId=cfg.nextDemandId||50;}
+    if(cfg.pt1) document.getElementById('pt1').value=cfg.pt1;
+    if(cfg.pt2) document.getElementById('pt2').value=cfg.pt2;
+    if(cfg.pt3) document.getElementById('pt3').value=cfg.pt3;
+    if(cfg.i2v) document.getElementById('cfg-i2v').value=cfg.i2v;
+    if(cfg.i2d) document.getElementById('cfg-i2d').value=cfg.i2d;
+    if(cfg.cons) document.getElementById('cfg-cons').value=cfg.cons;
+    if(cfg.tel) document.getElementById('cfg-tel').value=cfg.tel;
+    if(cfg.insta) document.getElementById('cfg-insta').value=cfg.insta;
+    if(cfg.site) document.getElementById('cfg-site').value=cfg.site;
+    if(cfg.email) document.getElementById('cfg-email').value=cfg.email;
+  }catch(e){}
+}
+
+loadConf(); popSel(); renderDiligTable(); renderDigGrid(); calc(); updProp();
+</script>
+</body>
+</html>
